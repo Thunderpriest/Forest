@@ -16,10 +16,10 @@ abstract class Animal(location: Location)
     var hp : Int = maxHp
     var location : Location = location
 
-    abstract fun eat()
+    abstract fun eat(dead : ArrayList<Animal>)
     abstract fun breed(born : ArrayList<Animal>)
 
-    fun move()
+    open fun move()
     {
         val oldlocation : Location = location
         var tree : Tree = location.tree
@@ -48,9 +48,81 @@ abstract class Animal(location: Location)
     }
 }
 
+class Wolf(location: Location) : Animal(location)
+{
+    override fun eat(dead: ArrayList<Animal>)
+    {
+        val random : Random = SecureRandom()
+        val animal : Animal = location.animals[random.nextInt(location.animals.size)]
+        if (this != animal)
+        {
+            dead.add(animal)
+        }
+    }
+
+    override fun breed(born: ArrayList<Animal>)
+    {
+        born.add(Wolf(location))
+    }
+
+    override fun move()
+    {
+        val oldlocation : Location = location
+        var tree : Tree = location.tree
+        var newLocation : Location
+
+        if (random.nextBoolean())
+        {
+            tree = location.tree.nTrees[random.nextInt(location.tree.nTrees.size)]
+        }
+
+        newLocation = tree.roots
+
+        oldlocation.animals.remove(this)
+        newLocation.animals.add(this)
+        location = newLocation
+    }
+}
+
+class Vulture(location: Location) : Animal(location)
+{
+    override fun eat(dead: ArrayList<Animal>)
+    {
+        val random : Random = SecureRandom()
+        val animal : Animal = location.animals[random.nextInt(location.animals.size)]
+        if (this != animal && animal !is Badger)
+        {
+            dead.add(animal)
+        }
+    }
+
+    override fun breed(born: ArrayList<Animal>)
+    {
+        born.add(Vulture(location))
+    }
+
+    override fun move()
+    {
+        val oldlocation : Location = location
+        var tree : Tree = location.tree
+        var newLocation : Location
+
+        if (random.nextBoolean())
+        {
+            tree = location.tree.nTrees[random.nextInt(location.tree.nTrees.size)]
+        }
+
+        newLocation = tree.crown
+
+        oldlocation.animals.remove(this)
+        newLocation.animals.add(this)
+        location = newLocation
+    }
+}
+
 class Squirrel(location: Location) : Animal(location)
 {
-    override fun eat()
+    override fun eat(dead: ArrayList<Animal>)
     {
         for (i in 0..location.resources.size-1)
         {
@@ -72,7 +144,7 @@ class Squirrel(location: Location) : Animal(location)
 
 class Chipmunk(location: Location) : Animal(location)
 {
-    override fun eat()
+    override fun eat(dead: ArrayList<Animal>)
     {
         for (i in 0..location.resources.size-1)
         {
@@ -94,7 +166,7 @@ class Chipmunk(location: Location) : Animal(location)
 
 class FSquirrel(location: Location) : Animal(location)
 {
-    override fun eat()
+    override fun eat(dead: ArrayList<Animal>)
     {
         for (i in 0..location.resources.size-1)
         {
@@ -116,7 +188,7 @@ class FSquirrel(location: Location) : Animal(location)
 
 class Woodpecker(location: Location) : Animal(location)
 {
-    override fun eat()
+    override fun eat(dead: ArrayList<Animal>)
     {
         for (i in 0..location.resources.size-1)
         {
@@ -138,7 +210,7 @@ class Woodpecker(location: Location) : Animal(location)
 
 class Badger(location: Location) : Animal(location)
 {
-    override fun eat()
+    override fun eat(dead: ArrayList<Animal>)
     {
         for (i in 0..location.resources.size-1)
         {
@@ -295,6 +367,18 @@ class Crown(tree: Tree) : Location(tree)
                 resources.add(MapleLeaf())
         }
     }
+
+    override fun spawnAnimals()
+    {
+        val random : Random = SecureRandom()
+        val rnd : Double = random.nextDouble()
+
+        if (rnd < 0.2)
+        {
+            val rand = random.nextBoolean()
+            animals.add(Vulture(this))
+        }
+    }
 }
 
 class Trunk(tree: Tree) : Location(tree)
@@ -338,6 +422,18 @@ class Roots(tree: Tree) : Location(tree)
             val rand = random.nextInt(10)
             for (i in 0..rand)
                 resources.add(RootCrop())
+        }
+    }
+
+    override fun spawnAnimals()
+    {
+        val random : Random = SecureRandom()
+        val rnd : Double = random.nextDouble()
+
+        if (rnd < 0.2)
+        {
+            val rand = random.nextBoolean()
+            animals.add(Wolf(this))
         }
     }
 }
@@ -428,7 +524,7 @@ class Forest
         {
             animal.hp -= 1
             animal.move()
-            animal.eat()
+            animal.eat(dead)
 
             if (animal.hp <= 0)
             {
