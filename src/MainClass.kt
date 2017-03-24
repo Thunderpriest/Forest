@@ -492,6 +492,12 @@ class Forest
     {
         for (tree in trees)
         {
+            tree.crown.spawnAnimals()
+            animals.addAll(tree.crown.animals)
+
+            tree.roots.spawnAnimals()
+            animals.addAll(tree.roots.animals)
+
             for (hollow in tree.trunk.hollows)
             {
                 hollow.spawnAnimals()
